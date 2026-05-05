@@ -38,9 +38,9 @@ Olympic History Stats:
 
 Based on their physical profile (Inches/lbs) and the Olympic stats (cm/kg), determine their "Olympic Archetype".
 Note: 1 inch = 2.54cm. 1 lb = 0.45kg.
-1. Start with "You are the [Archetype Name]!" (e.g. "The Wingspan Wonder", "The Agility Ace").
+1. Start with a bold, premium title for their identity (e.g. "The Wingspan Wonder", "The Agility Specialist"). Do NOT use "You are the" as a prefix.
 2. Write a 2nd sentence explaining WHY this fits them based on their metrics vs Olympic history.
-3. Keep it punchy, professional, and Apple-inspired.
+3. Keep it punchy, professional, and Apple-inspired. Do NOT use markdown formatting (no asterisks or bolding).
 
 Write exactly two sentences.`;
 
@@ -55,14 +55,14 @@ Write exactly two sentences.`;
     });
 
     // The new SDK returns response.text directly
-    const archetypeText = response.text;
+    const archetypeText = response.text.replace(/\*\*/g, '');
 
     res.status(200).json({ archetype: archetypeText.trim() });
   } catch (error) {
     console.error('[USA Wrapped] AI generation failed with error:', error.message);
     // Bulletproof fallback so the UI never breaks
     res.status(200).json({ 
-      archetype: "You are the Olympic Legend. Your dedication to the games is unmatched!" 
+      archetype: "Olympic Legend. Your dedication to the games and physical potential is unmatched!" 
     });
   }
 }

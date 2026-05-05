@@ -48,6 +48,22 @@ export default function handler(req, res) {
       }
     });
 
+    // 6. Medal Distribution
+    const medalDistribution = { Gold: 0, Silver: 0, Bronze: 0, Participated: 0 };
+    athletes.forEach(a => {
+      if (medalDistribution[a.medal] !== undefined) {
+        medalDistribution[a.medal]++;
+      }
+    });
+
+    // 7. Season Distribution
+    const seasonDistribution = { Summer: 0, Winter: 0 };
+    athletes.forEach(a => {
+      if (seasonDistribution[a.games_season] !== undefined) {
+        seasonDistribution[a.games_season]++;
+      }
+    });
+
     res.status(200).json({
       metadata: data.metadata,
       summary: {
@@ -56,7 +72,9 @@ export default function handler(req, res) {
         tallestRecord: tallest,
         shortestRecord: shortest,
         yearDistribution: yearCount,
-        stateDistribution: stateCount
+        stateDistribution: stateCount,
+        medalDistribution,
+        seasonDistribution
       }
     });
   } catch (error) {

@@ -9,18 +9,37 @@ import { Activity, Users, ArrowLeft, MessageSquare, MapPin, Sparkles, ArrowRight
 import { motion, AnimatePresence } from 'motion/react';
 import Link from 'next/link';
 import { STATE_DATA } from '@/constants/state-data';
+import { MedalDistribution } from '@/components/ui/medal-distribution';
+
+const STATE_ABBREVIATIONS: Record<string, string> = {
+  'Alabama': 'AL', 'Alaska': 'AK', 'Arizona': 'AZ', 'Arkansas': 'AR', 'California': 'CA',
+  'Colorado': 'CO', 'Connecticut': 'CT', 'Delaware': 'DE', 'Florida': 'FL', 'Georgia': 'GA',
+  'Hawaii': 'HI', 'Idaho': 'ID', 'Illinois': 'IL', 'Indiana': 'IN', 'Iowa': 'IA',
+  'Kansas': 'KS', 'Kentucky': 'KY', 'Louisiana': 'LA', 'Maine': 'ME', 'Maryland': 'MD',
+  'Massachusetts': 'MA', 'Michigan': 'MI', 'Minnesota': 'MN', 'Mississippi': 'MS', 'Missouri': 'MO',
+  'Montana': 'MT', 'Nebraska': 'NE', 'Nevada': 'NV', 'New Hampshire': 'NH', 'New Jersey': 'NJ',
+  'New Mexico': 'NM', 'New York': 'NY', 'North Carolina': 'NC', 'North Dakota': 'ND', 'Ohio': 'OH',
+  'Oklahoma': 'OK', 'Oregon': 'OR', 'Pennsylvania': 'PA', 'Rhode Island': 'RI', 'South Carolina': 'SC',
+  'South Dakota': 'SD', 'Tennessee': 'TN', 'Texas': 'TX', 'Utah': 'UT', 'Vermont': 'VT',
+  'Virginia': 'VA', 'Washington': 'WA', 'West Virginia': 'WV', 'Wisconsin': 'WI', 'Wyoming': 'WY'
+};
 
 export default function Wrapped() {
   const [stats, setStats] = useState<any>(null);
   const [archetype, setArchetype] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedState, setSelectedState] = useState<string | null>(null);
-  const [userData, setUserData] = useState({ name: 'Guest', location: 'the US' });
+  const [userData, setUserData] = useState<any>({ name: 'Guest', location: 'the US', metrics: {} });
   const chatRef = useRef<HTMLDivElement>(null);
+  const [pendingPrompt, setPendingPrompt] = useState<string | null>(null);
 
   const scrollToChat = () => {
     chatRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    // Focus the input if possible (optional)
+    if (selectedState) {
+      setPendingPrompt(`Tell me about the Olympic legacy of ${selectedState}. Mention some specific athletes from our records.`);
+      // Clear the prompt after a short delay so it can be re-triggered
+      setTimeout(() => setPendingPrompt(null), 100);
+    }
   };
 
   useEffect(() => {
@@ -56,7 +75,7 @@ export default function Wrapped() {
           wingspan: parseInt(params.get('wingspan') || '185')
         };
         
-        setUserData({ name, location });
+        setUserData({ name, location, metrics });
 
         const aiRes = await fetch('/api/generate-archetype', {
           method: 'POST',
@@ -78,6 +97,9 @@ export default function Wrapped() {
     }
     fetchData();
 
+    // Ensure we start at the top on every mount
+    window.scrollTo(0, 0);
+
     return () => clearTimeout(timer);
   }, []);
 
@@ -87,7 +109,7 @@ export default function Wrapped() {
         <title>Your USA Wrapped</title>
       </Head>
 
-      <main className="max-w-7xl mx-auto pt-6 pb-20">
+      <main className="max-w-7xl mx-auto pt-6 pb-6">
         <Link href="/" className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-900 font-medium mb-8 transition-colors group">
           <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" /> Back to Start
         </Link>
@@ -102,7 +124,7 @@ export default function Wrapped() {
               <p className="text-[10px] uppercase tracking-[0.2em] font-black text-gray-400 mb-1">AI Status</p>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <p className="font-bold text-sm">Gemini 2.5 Pro Live</p>
+                <p className="font-bold text-sm">Gemini Pro Live API</p>
               </div>
             </div>
           </div>
@@ -116,15 +138,15 @@ export default function Wrapped() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-4 auto-rows-[minmax(320px,auto)] gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 auto-rows-auto gap-6">
             
-            {/* TILE 1: D3 US Heatmap — Now 50% width (col 1-2) */}
-            <div className="col-span-1 md:col-span-2 min-h-[550px]">
+            {/* TILE 1: D3 US Heatmap — Reverted to full size */}
+            <div className="col-span-1 md:col-span-2 md:row-span-2 h-[574px]">
               <D3USMap selected={selectedState} onSelect={setSelectedState} />
             </div>
 
-            {/* TILE 2: Contextual Detail Tile — Now 50% width (col 3-4) */}
-            <div className="col-span-1 md:col-span-2 min-h-[550px] bg-white rounded-[2.5rem] shadow-sm border border-gray-200/60 overflow-hidden relative">
+            {/* TILE 2: Contextual Detail Tile — 50% height reduction & compacted whitespace */}
+            <div className="col-span-1 md:col-span-2 h-[275px] bg-white rounded-[2.5rem] shadow-sm border border-gray-200/60 overflow-hidden relative">
               <AnimatePresence mode="wait">
                 {!selectedState ? (
                   <motion.div
@@ -132,32 +154,59 @@ export default function Wrapped() {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
-                    className="p-10 h-full flex flex-col justify-between"
+                    className="p-8 h-full flex flex-col justify-between"
                   >
-                    <div>
-                      <div className="flex items-center gap-3 mb-8">
-                        <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-200">
-                          <Activity size={24} />
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-200">
+                          <Activity size={20} />
                         </div>
-                        <span className="text-xs font-black text-blue-600 uppercase tracking-widest">Personal Profile</span>
+                        <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Personal Profile</span>
                       </div>
-                      <h2 className="text-4xl font-black text-gray-900 leading-tight mb-4 tracking-tighter">
-                        {archetype || 'Analyzing your potential...'}
-                      </h2>
-                      <p className="text-gray-500 font-medium leading-relaxed max-w-sm mb-8">
-                        Based on your profile, we've identified your unique signature in American sports history.
-                      </p>
                     </div>
-                    <div className="bg-gray-50 rounded-3xl p-6 border border-gray-100">
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Your Data Points</p>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                          <p className="text-xs font-bold text-gray-400">Home State</p>
-                          <p className="text-lg font-black text-gray-900">{userData.location}</p>
+
+                    <div className="mt-2">
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Olympic Potential</p>
+                      <h2 className="text-3xl font-black text-gray-900 leading-none tracking-tighter">
+                        {archetype || 'Analyzing...'}
+                      </h2>
+                    </div>
+
+                    <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
+                      <div className="grid grid-cols-4 gap-x-4 gap-y-2">
+                        <div className="space-y-0.5">
+                          <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Home</p>
+                          <p className="text-xs font-black text-gray-900 truncate">
+                            {STATE_ABBREVIATIONS[userData.location] || userData.location}
+                          </p>
                         </div>
-                        <div className="space-y-1">
-                          <p className="text-xs font-bold text-gray-400">Identity</p>
-                          <p className="text-lg font-black text-gray-900">{userData.name}</p>
+                        <div className="space-y-0.5">
+                          <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Identity</p>
+                          <p className="text-xs font-black text-gray-900 truncate">{userData.name}</p>
+                        </div>
+                        <div className="space-y-0.5">
+                          <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Height</p>
+                          <p className="text-xs font-black text-gray-900">{Math.floor(userData.metrics.height / 12)}'{userData.metrics.height % 12}"</p>
+                        </div>
+                        <div className="space-y-0.5">
+                          <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Weight</p>
+                          <p className="text-xs font-black text-gray-900">{userData.metrics.weight} lb</p>
+                        </div>
+                        <div className="space-y-0.5">
+                          <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Strength</p>
+                          <p className="text-xs font-black text-gray-900">{userData.metrics.strength}/10</p>
+                        </div>
+                        <div className="space-y-0.5">
+                          <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Endurance</p>
+                          <p className="text-xs font-black text-gray-900">{userData.metrics.endurance}/10</p>
+                        </div>
+                        <div className="space-y-0.5">
+                          <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Agility</p>
+                          <p className="text-xs font-black text-gray-900">{userData.metrics.agility}/10</p>
+                        </div>
+                        <div className="space-y-0.5">
+                          <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Wingspan</p>
+                          <p className="text-xs font-black text-gray-900">{userData.metrics.wingspan}"</p>
                         </div>
                       </div>
                     </div>
@@ -168,65 +217,83 @@ export default function Wrapped() {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
-                    className="p-10 h-full flex flex-col overflow-y-auto custom-scrollbar"
+                    className="p-6 h-full flex flex-col justify-between"
                   >
-                    <div className="flex items-center justify-between mb-8">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-orange-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-orange-200">
-                          <MapPin size={24} />
-                        </div>
-                        <span className="text-xs font-black text-orange-500 uppercase tracking-widest">State Legacy</span>
-                      </div>
+                    <div className="flex items-center justify-end">
                       <button 
                         onClick={() => setSelectedState(null)}
-                        className="text-[10px] font-black text-gray-400 hover:text-gray-900 uppercase tracking-widest"
+                        className="text-[9px] font-black text-gray-400 hover:text-gray-900 uppercase tracking-widest"
                       >
-                        Reset to Me
+                        Reset
                       </button>
                     </div>
-                    <h2 className="text-5xl font-black text-gray-900 leading-tight mb-8 tracking-tighter">{selectedState}</h2>
+
+                    <h2 className="text-3xl font-black text-gray-900 leading-none tracking-tighter mt-1 mb-2">{selectedState}</h2>
                     
-                    <div className="grid grid-cols-3 gap-3 mb-8">
-                      <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Olympic</p>
-                        <p className="text-xl font-black text-gray-900">{STATE_DATA[selectedState]?.olympic || 15}</p>
+                    <div className="grid grid-cols-2 gap-2 mb-2">
+                      <div className="bg-gray-50/50 p-2 rounded-xl border border-gray-100 flex items-center justify-between px-3">
+                        <p className="text-[9px] font-black text-gray-400 uppercase">Olympic</p>
+                        <p className="text-sm font-black text-gray-900">{STATE_DATA[selectedState]?.olympic || 15}</p>
                       </div>
-                      <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Para</p>
-                        <p className="text-xl font-black text-gray-900">{STATE_DATA[selectedState]?.para || 5}</p>
+                      <div className="bg-gray-50/50 p-2 rounded-xl border border-gray-100 flex items-center justify-between px-3">
+                        <p className="text-[9px] font-black text-gray-400 uppercase">Paralympic</p>
+                        <p className="text-sm font-black text-gray-900">{STATE_DATA[selectedState]?.para || 5}</p>
                       </div>
-                      <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Top Sport</p>
-                        <p className="text-xl font-black text-gray-900 truncate">{STATE_DATA[selectedState]?.sports[0]?.name || 'Swimming'}</p>
-                      </div>
+                    </div>
+
+                    <div className="flex-1 min-h-0 bg-gray-50/50 rounded-2xl border border-gray-100 p-4 overflow-hidden mb-2 flex flex-col justify-center">
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                        <Trophy size={12} className="text-orange-500" />
+                        Top Sport Achievement
+                      </p>
+                      {STATE_DATA[selectedState]?.topSport ? (
+                        <p className="text-sm font-bold text-gray-900 leading-snug">
+                          <span className="text-orange-600 font-black">{STATE_DATA[selectedState]?.topSport}:</span>
+                          <span className="ml-1 text-gray-600">
+                            {STATE_DATA[selectedState]?.gold} gold, {STATE_DATA[selectedState]?.silver} silver, {STATE_DATA[selectedState]?.bronze} bronze
+                          </span>
+                        </p>
+                      ) : (
+                        <p className="text-xs font-bold text-gray-500 italic leading-snug">
+                          Multi-disciplinary: more Olympic/Paralympic medals to come.
+                        </p>
+                      )}
                     </div>
 
                     <button 
                       onClick={scrollToChat}
-                      className="w-full mt-auto flex items-center justify-center gap-2 py-5 bg-gray-900 hover:bg-black text-white font-black rounded-2xl transition-all shadow-xl shadow-gray-200 group"
+                      className="w-full flex items-center justify-center gap-2 py-3 bg-gray-600 hover:bg-black text-white font-black rounded-xl transition-all shadow-lg shadow-gray-200 group text-[11px]"
                     >
-                      Learn More about {selectedState}
-                      <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                      Deep Research in {selectedState}
+                      <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                     </button>
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
 
-            {/* TILE 3: Interactive Radar — col 1-2, row 2-3 */}
-            <div className="col-span-1 md:col-span-2 md:row-span-2 min-h-[660px]">
+            {/* NEW TILE: Global Success Breakdown — Fills the 275px gap */}
+            <div className="col-span-1 md:col-span-2 h-[275px] bg-white rounded-[2.5rem] shadow-sm border border-gray-200/60 overflow-hidden hover:shadow-xl hover:shadow-gray-200/60 transition-all duration-500">
+              <MedalDistribution 
+                medals={stats?.medalDistribution || { Gold: 0, Silver: 0, Bronze: 0, Participated: 0 }}
+                seasons={stats?.seasonDistribution || { Summer: 0, Winter: 0 }}
+              />
+            </div>
+
+            {/* TILE 3: Interactive Radar — Aligned with Chat bottom */}
+            <div className="col-span-1 md:col-span-2 md:row-span-2 h-[820px]">
               <RadarChart />
             </div>
 
-            {/* TILE 4: Total Athletes — col 3-4, row 2 */}
-            <div className="col-span-1 md:col-span-2 min-h-[320px] bg-white rounded-[2.5rem] p-10 shadow-sm border border-gray-200/60 flex flex-col group hover:shadow-xl hover:shadow-gray-200/60 transition-all duration-500">
+            {/* TILE 4: Total Athletes — Increased height */}
+            <div className="col-span-1 md:col-span-2 h-[340px] bg-white rounded-[2.5rem] p-10 shadow-sm border border-gray-200/60 flex flex-col group hover:shadow-xl hover:shadow-gray-200/60 transition-all duration-500">
               <ParticipationTrend total={stats?.totalRecords || 3636} />
             </div>
 
-            {/* TILE 5: Gemini Chat — col 3-4, row 3, Now expanded */}
+            {/* TILE 5: Gemini Chat — Aligned with Radar bottom */}
             <div 
               ref={chatRef}
-              className="col-span-1 md:col-span-2 min-h-[500px] bg-white rounded-[2.5rem] shadow-sm border border-gray-200/60 relative overflow-hidden flex flex-col transition-all duration-500"
+              className="col-span-1 md:col-span-2 h-[456px] bg-white rounded-[2.5rem] shadow-sm border border-gray-200/60 relative overflow-hidden flex flex-col transition-all duration-500"
             >
               <div className="p-8 pb-4 flex-shrink-0">
                 <div className="flex items-center gap-3 mb-1 text-gray-900">
@@ -235,14 +302,39 @@ export default function Wrapped() {
                 </div>
                 <p className="text-gray-400 text-xs font-medium">Deep dive into any year, state, or athlete.</p>
               </div>
-              <div className="flex-1 overflow-y-auto custom-scrollbar p-4 min-h-0">
-                <AIChatInput />
+              <div className="flex-1 flex flex-col min-h-0">
+                <AIChatInput context={{ selectedState }} externalPrompt={pendingPrompt} />
               </div>
               <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/5 blur-[80px] rounded-full pointer-events-none" />
               <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-500/5 blur-[60px] rounded-full pointer-events-none" />
             </div>
           </div>
         )}
+
+        {/* FOOTER: Professional Credit */}
+        <footer className="mt-4 pb-2 flex flex-col md:flex-row items-center justify-between gap-6 border-t border-gray-200/60 pt-4">
+          <div className="flex flex-col items-center md:items-start gap-1">
+            <p className="text-[12px] font-black text-gray-400 uppercase tracking-[0.3em]">
+              &copy; 2026 Sagar Sahu &middot; All Rights Reserved
+            </p>
+            <div className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
+              <p className="text-[14px] font-bold text-gray-900 tracking-tight">
+                Built for the 2026 Team USA x Google Cloud Hackathon
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-8">
+            <div className="flex flex-col items-end gap-0.5">
+              <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Stack</p>
+              <p className="text-[12px] font-black text-gray-900">Next.js &middot; Gemini Pro &middot; Vertex AI</p>
+            </div>
+            <div className="flex flex-col items-end gap-0.5">
+              <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Cloud</p>
+              <p className="text-[12px] font-black text-gray-900">Google Cloud Platform</p>
+            </div>
+          </div>
+        </footer>
       </main>
     </div>
   );

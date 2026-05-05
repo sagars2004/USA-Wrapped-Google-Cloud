@@ -98,7 +98,7 @@ export default function LandingPage() {
             USA <span className="text-blue-600">Wrapped</span>
           </h1>
           <p className="text-base sm:text-lg text-gray-600 font-medium max-w-xl mx-auto leading-relaxed">
-            Enter your details to generate your personalized Olympic archetype using Gemini 2.5 Pro.
+            Enter your details to generate your personalized Olympic archetype using Gemini API and Google Cloud.
           </p>
         </motion.div>
 

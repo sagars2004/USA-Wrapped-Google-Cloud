@@ -216,7 +216,7 @@ const RadarChart = () => {
         </svg>
       </div>
 
-      <div className="flex-1 mt-6 space-y-3 overflow-y-auto min-h-0 pr-2">
+      <div className="flex-1 mt-8 space-y-6 overflow-y-auto min-h-0 pr-2">
         {CATEGORIES.map((cat) => (
           <div key={cat.key} className="flex items-center gap-4">
             <span className="text-[10px] font-black text-gray-400 w-20 flex-shrink-0 uppercase tracking-widest">{cat.label}</span>

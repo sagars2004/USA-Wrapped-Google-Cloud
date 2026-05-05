@@ -2,272 +2,144 @@
 
 import * as React from "react"
 import { useState, useEffect, useRef } from "react";
-import { Lightbulb, Mic, Globe, Paperclip, Send } from "lucide-react";
-import { AnimatePresence, motion, Variants } from "motion/react";
- 
-const PLACEHOLDERS = [
-  "Generate website with Gemini",
-  "Create a new project with Google Cloud",
-  "What is the meaning of life?",
-  "What is the best way to learn React?",
-  "How to cook a delicious meal?",
-  "Summarize this article",
-];
- 
-const AIChatInput = () => {
-  const [placeholderIndex, setPlaceholderIndex] = useState(0);
-  const [showPlaceholder, setShowPlaceholder] = useState(true);
-  const [isActive, setIsActive] = useState(false);
-  const [thinkActive, setThinkActive] = useState(false);
-  const [deepSearchActive, setDeepSearchActive] = useState(false);
-  const [inputValue, setInputValue] = useState("");
-  const wrapperRef = useRef<HTMLDivElement>(null);
- 
-  // Cycle placeholder text when input is inactive
+import { Send, Sparkles } from "lucide-react";
+import { motion } from "motion/react";
+
+interface Message {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+interface AIChatInputProps {
+  context?: any;
+  externalPrompt?: string | null;
+}
+
+const AIChatInput = ({ context, externalPrompt }: AIChatInputProps) => {
+  const [messages, setMessages] = useState<Message[]>([
+    { role: 'assistant', content: "Hello! I'm your Team USA historian. Ask me anything about Olympic history or how your stats compare to the greats." }
+  ]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isFirstRender = useRef(true);
+
+  // Handle external triggers (e.g. "Deep Research" button)
   useEffect(() => {
-    if (isActive || inputValue) return;
- 
-    const interval = setInterval(() => {
-      setShowPlaceholder(false);
-      setTimeout(() => {
-        setPlaceholderIndex((prev) => (prev + 1) % PLACEHOLDERS.length);
-        setShowPlaceholder(true);
-      }, 400);
-    }, 3000);
- 
-    return () => clearInterval(interval);
-  }, [isActive, inputValue]);
- 
-  // Close input when clicking outside
+    if (externalPrompt) {
+      handleSend(externalPrompt);
+    }
+  }, [externalPrompt]);
+
+  const scrollToBottom = () => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  };
+
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        wrapperRef.current &&
-        !wrapperRef.current.contains(event.target as Node)
-      ) {
-        if (!inputValue) setIsActive(false);
+    scrollToBottom();
+  }, [messages, isLoading]);
+
+  const handleSend = async (content: string = input) => {
+    const textToSend = content.trim();
+    if (!textToSend || isLoading) return;
+
+    const userMessage: Message = { role: 'user', content: textToSend };
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [...messages, userMessage],
+          context
+        })
+      });
+
+      const data = await response.json();
+      if (data.content) {
+        setMessages(prev => [...prev, { role: 'assistant', content: data.content }]);
       }
-    };
- 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [inputValue]);
- 
-  const handleActivate = () => setIsActive(true);
- 
-  const containerVariants: Variants = {
-    collapsed: {
-      height: 68,
-      boxShadow: "0 2px 8px 0 rgba(0,0,0,0.08)",
-      transition: { type: "spring", stiffness: 120, damping: 18 },
-    },
-    expanded: {
-      height: 128,
-      boxShadow: "0 8px 32px 0 rgba(0,0,0,0.16)",
-      transition: { type: "spring", stiffness: 120, damping: 18 },
-    },
+    } catch (error) {
+      console.error('Chat error:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
- 
-  const placeholderContainerVariants: Variants = {
-    initial: {},
-    animate: { transition: { staggerChildren: 0.025 } },
-    exit: { transition: { staggerChildren: 0.015, staggerDirection: -1 } },
-  };
- 
-  const letterVariants: Variants = {
-    initial: {
-      opacity: 0,
-      filter: "blur(12px)",
-      y: 10,
-    },
-    animate: {
-      opacity: 1,
-      filter: "blur(0px)",
-      y: 0,
-      transition: {
-        opacity: { duration: 0.25 },
-        filter: { duration: 0.4 },
-        y: { type: "spring", stiffness: 80, damping: 20 },
-      },
-    },
-    exit: {
-      opacity: 0,
-      filter: "blur(12px)",
-      y: -10,
-      transition: {
-        opacity: { duration: 0.2 },
-        filter: { duration: 0.3 },
-        y: { type: "spring", stiffness: 80, damping: 20 },
-      },
-    },
-  };
- 
+
   return (
-    <div className="w-full h-full flex justify-center items-center text-black p-4">
-      <motion.div
-        ref={wrapperRef}
-        className="w-full"
-        variants={containerVariants}
-        animate={isActive || inputValue ? "expanded" : "collapsed"}
-        initial="collapsed"
-        style={{ overflow: "hidden", borderRadius: 32, background: "#fff" }}
-        onClick={handleActivate}
-      >
-        <div className="flex flex-col items-stretch w-full h-full">
-          {/* Input Row */}
-          <div className="flex items-center gap-2 p-3 rounded-full bg-white w-full">
-            <button
-              className="p-3 rounded-full hover:bg-gray-100 transition flex-shrink-0"
-              title="Attach file"
-              type="button"
-              tabIndex={-1}
-            >
-              <Paperclip size={20} />
-            </button>
- 
-            {/* Text Input & Placeholder */}
-            <div className="relative flex-1">
-              <input
-                type="text"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                className="flex-1 border-0 outline-0 rounded-md py-2 text-base bg-transparent w-full font-normal"
-                style={{ position: "relative", zIndex: 1 }}
-                onFocus={handleActivate}
-              />
-              <div className="absolute left-0 top-0 w-full h-full pointer-events-none flex items-center px-3 py-2">
-                <AnimatePresence mode="wait">
-                  {showPlaceholder && !isActive && !inputValue && (
-                    <motion.span
-                      key={placeholderIndex}
-                      className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-400 select-none pointer-events-none"
-                      style={{
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        zIndex: 0,
-                      }}
-                      variants={placeholderContainerVariants}
-                      initial="initial"
-                      animate="animate"
-                      exit="exit"
-                    >
-                      {PLACEHOLDERS[placeholderIndex]
-                        .split("")
-                        .map((char, i) => (
-                          <motion.span
-                            key={i}
-                            variants={letterVariants}
-                            style={{ display: "inline-block" }}
-                          >
-                            {char === " " ? "\u00A0" : char}
-                          </motion.span>
-                        ))}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
- 
-            <button
-              className="p-3 rounded-full hover:bg-gray-100 transition flex-shrink-0"
-              title="Voice input"
-              type="button"
-              tabIndex={-1}
-            >
-              <Mic size={20} />
-            </button>
-            <button
-              className="flex items-center gap-1 bg-black hover:bg-zinc-700 text-white p-3 rounded-full font-medium justify-center flex-shrink-0"
-              title="Send"
-              type="button"
-              tabIndex={-1}
-            >
-              <Send size={18} />
-            </button>
-          </div>
- 
-          {/* Expanded Controls */}
+    <div className="flex-1 flex flex-col min-h-0 bg-transparent">
+      {/* Messages Area */}
+      <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+        {messages.map((msg, i) => (
           <motion.div
-            className="w-full flex justify-start px-4 items-center text-sm"
-            variants={{
-              hidden: {
-                opacity: 0,
-                y: 20,
-                pointerEvents: "none" as const,
-                transition: { duration: 0.25 },
-              },
-              visible: {
-                opacity: 1,
-                y: 0,
-                pointerEvents: "auto" as const,
-                transition: { duration: 0.35, delay: 0.08 },
-              },
-            }}
-            initial="hidden"
-            animate={isActive || inputValue ? "visible" : "hidden"}
-            style={{ marginTop: 8 }}
+            key={i}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
-            <div className="flex gap-3 items-center">
-              {/* Think Toggle */}
-              <button
-                className={`flex items-center gap-1 px-4 py-2 rounded-full transition-all font-medium group ${
-                  thinkActive
-                    ? "bg-blue-600/10 outline outline-blue-600/60 text-blue-950"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-                title="Think"
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setThinkActive((a) => !a);
-                }}
-              >
-                <Lightbulb
-                  className="group-hover:fill-yellow-300 transition-all"
-                  size={18}
-                />
-                Think
-              </button>
- 
-              {/* Deep Search Toggle */}
-              <motion.button
-                className={`flex items-center px-4 gap-1 py-2 rounded-full transition font-medium whitespace-nowrap overflow-hidden justify-start  ${
-                  deepSearchActive
-                    ? "bg-blue-600/10 outline outline-blue-600/60 text-blue-950"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-                title="Deep Search"
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setDeepSearchActive((a) => !a);
-                }}
-                initial={false}
-                animate={{
-                  width: deepSearchActive ? 125 : 36,
-                  paddingLeft: deepSearchActive ? 8 : 9,
-                }}
-              >
-                <div className="flex-1 min-w-[18px]">
-                  <Globe size={18} />
-                </div>
-                <motion.span
-                className="pb-[2px] ml-2"
-                  initial={false}
-                  animate={{
-                    opacity: deepSearchActive ? 1 : 0,
-                  }}
-                >
-                  Deep Search
-                </motion.span>
-              </motion.button>
+            <div className={`max-w-[90%] px-6 py-4 rounded-[1.5rem] text-sm leading-relaxed shadow-sm transition-all ${
+              msg.role === 'user' 
+                ? 'bg-blue-600 text-white font-bold' 
+                : 'bg-gray-100/90 backdrop-blur-md border border-gray-200 text-gray-800 font-medium'
+            }`}>
+              {msg.content.split('\n').map((line, li) => (
+                <p key={li} className={li > 0 ? 'mt-3' : ''}>
+                  {line.split('**').map((part, pi) => (
+                    pi % 2 === 1 ? <strong key={pi} className="font-black text-gray-900">{part}</strong> : part
+                  ))}
+                </p>
+              ))}
             </div>
           </motion.div>
+        ))}
+        {isLoading && (
+          <div className="flex justify-start">
+            <div className="bg-gray-50 border border-gray-100 px-6 py-4 rounded-[1.5rem]">
+              <div className="flex gap-1.5">
+                {[0, 1, 2].map((i) => (
+                  <motion.div
+                    key={i}
+                    className="w-1.5 h-1.5 bg-gray-300 rounded-full"
+                    animate={{ opacity: [0.3, 1, 0.3] }}
+                    transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input Area */}
+      <div className="p-6 pt-2">
+        <div className="relative group">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+            placeholder="Ask anything..."
+            className="w-full bg-gray-50 border-2 border-transparent focus:border-blue-600/20 focus:bg-white rounded-2xl py-4 pl-6 pr-14 text-sm font-bold text-gray-900 transition-all placeholder:text-gray-400 outline-none"
+          />
+          <button
+            onClick={() => handleSend()}
+            disabled={!input.trim() || isLoading}
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-gray-900 hover:bg-black disabled:bg-gray-200 text-white rounded-xl flex items-center justify-center transition-all shadow-lg shadow-gray-200"
+          >
+            <Send size={18} />
+          </button>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 };
- 
+
 export { AIChatInput };

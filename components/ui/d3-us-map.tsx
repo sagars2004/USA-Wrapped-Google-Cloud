@@ -92,13 +92,14 @@ const D3USMap = ({ selected, onSelect }: { selected: string | null; onSelect: (n
           .on("mousemove", (event: any) => {
             setTooltip(prev => prev ? { ...prev, x: event.clientX, y: event.clientY } : null);
           })
-          .on("mouseout", function() {
-            const isSelected = d3.select(this).attr("data-selected") === "true";
-            if (!isSelected) {
-              d3.select(this)
-                .attr("stroke", "#fff")
-                .attr("stroke-width", 0.8);
-            }
+          .on("mouseout", function(event: any, s: any) {
+            const name = s.properties.name;
+            const isActuallySelected = name === selected;
+            
+            d3.select(this)
+              .attr("stroke", isActuallySelected ? "#F59E0B" : "#fff")
+              .attr("stroke-width", isActuallySelected ? 2.5 : 0.8);
+            
             setTooltip(null);
           })
           .on("click", function(event: any, s: any) {

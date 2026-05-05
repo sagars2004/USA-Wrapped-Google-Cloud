@@ -20,14 +20,14 @@ const HISTORICAL_DATA = [
 ];
 
 const ParticipationTrend = ({ total }: { total: number }) => {
-  const width = 400;
-  const height = 140;
+  const width = 600;
+  const height = 160;
   const maxCount = Math.max(...HISTORICAL_DATA.map(d => d.count));
   
   // Create area path
   const points = HISTORICAL_DATA.map((d, i) => {
     const x = (i / (HISTORICAL_DATA.length - 1)) * width;
-    const y = height - (d.count / maxCount) * height * 0.8;
+    const y = height - (d.count / maxCount) * height * 0.9;
     return `${x},${y}`;
   });
 
@@ -46,9 +46,9 @@ const ParticipationTrend = ({ total }: { total: number }) => {
         </div>
       </div>
 
-      <div className="flex-1 relative mt-6 min-h-[120px]">
+      <div className="flex-1 relative mt-4 min-h-[160px]">
         <svg
-          viewBox={`0 0 ${width} ${height}`}
+          viewBox={`0 0 ${width} ${height + 20}`}
           className="w-full h-full"
           preserveAspectRatio="none"
           style={{ overflow: 'visible' }}
@@ -101,11 +101,12 @@ const ParticipationTrend = ({ total }: { total: number }) => {
               <text
                 key={d.year}
                 x={x}
-                y={height + 15}
+                y={height + 18}
                 textAnchor="middle"
-                fontSize="10"
+                fontSize="11"
                 fill="#9ca3af"
-                fontWeight="bold"
+                fontWeight="800"
+                className="uppercase tracking-tighter"
               >
                 {d.year}
               </text>
@@ -114,10 +115,7 @@ const ParticipationTrend = ({ total }: { total: number }) => {
         </svg>
       </div>
 
-      <div className="mt-8 pt-4 border-t border-gray-100">
-        <p className="text-[10px] text-gray-500 font-medium leading-relaxed">
-          From the first <span className="text-gray-900 font-bold">14 athletes</span> in Athens 1896 to the projected <span className="text-gray-900 font-bold">600+</span> for the 2026 Winter Legacy.
-        </p>
+      <div className="mt-4 pt-4 border-t border-gray-100">
       </div>
     </div>
   );
