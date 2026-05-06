@@ -45,7 +45,7 @@ export const MedalDistribution = ({ medals, seasons }: MedalDistributionProps) =
             {medalData.map((m, idx) => (
               <div key={idx} className="flex items-center gap-2.5">
                 <div className={`w-7 h-7 ${m.color} rounded-xl flex items-center justify-center shadow-sm flex-shrink-0`}>
-                  {React.cloneElement(m.icon as React.ReactElement, { size: 14 })}
+                  {React.cloneElement(m.icon as React.ReactElement<{ size?: number }>, { size: 14 })}
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between text-[9px] font-black">
