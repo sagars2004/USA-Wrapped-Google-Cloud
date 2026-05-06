@@ -117,7 +117,7 @@ export default function Wrapped() {
         <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <h1 className="text-5xl font-black tracking-tighter text-gray-900 sm:text-7xl mb-2">USA Wrapped</h1>
-            <p className="text-lg text-gray-500 font-medium max-w-xl">Your personalized dive into US-hosted Olympic history.</p>
+            <p className="text-lg text-gray-500 font-medium max-w-xl">Your personalized dive into Team USA's legacy at US-hosted Games.</p>
           </div>
           <div className="flex gap-4">
             <div className="bg-white rounded-2xl px-6 py-4 border border-gray-200/50 shadow-sm">
@@ -166,7 +166,7 @@ export default function Wrapped() {
                     </div>
 
                     <div className="mt-2">
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Olympic Potential</p>
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Team USA Potential</p>
                       <h2 className="text-3xl font-black text-gray-900 leading-none tracking-tighter">
                         {archetype || 'Analyzing...'}
                       </h2>
@@ -232,11 +232,11 @@ export default function Wrapped() {
                     
                     <div className="grid grid-cols-2 gap-2 mb-2">
                       <div className="bg-gray-50/50 p-2 rounded-xl border border-gray-100 flex items-center justify-between px-3">
-                        <p className="text-[9px] font-black text-gray-400 uppercase">Olympic</p>
+                        <p className="text-[9px] font-black text-gray-400 uppercase">Olympic Games</p>
                         <p className="text-sm font-black text-gray-900">{STATE_DATA[selectedState]?.olympic || 15}</p>
                       </div>
                       <div className="bg-gray-50/50 p-2 rounded-xl border border-gray-100 flex items-center justify-between px-3">
-                        <p className="text-[9px] font-black text-gray-400 uppercase">Paralympic</p>
+                        <p className="text-[9px] font-black text-gray-400 uppercase">Paralympic Games</p>
                         <p className="text-sm font-black text-gray-900">{STATE_DATA[selectedState]?.para || 5}</p>
                       </div>
                     </div>
@@ -255,7 +255,7 @@ export default function Wrapped() {
                         </p>
                       ) : (
                         <p className="text-xs font-bold text-gray-500 italic leading-snug">
-                          Multi-disciplinary: more Olympic/Paralympic medals to come.
+                          Multi-disciplinary: more Team USA achievements to come.
                         </p>
                       )}
                     </div>

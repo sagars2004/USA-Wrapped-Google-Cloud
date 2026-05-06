@@ -23,24 +23,30 @@ export default async function handler(req, res) {
     }
 
     // Prepare the prompt for Gemini
-    const prompt = `You are the narrator for 'USA Wrapped'.
-I am providing summary statistics about the USA's Olympic history and a user's Bio-Metric profile.
+    const prompt = `You are a professional Team USA historian.
+I am providing summary statistics about Team USA's legacy and a user's Bio-Metric profile.
 
 User Name: ${userName}
 User Location: ${userLocation}
 User Bio-Metrics: ${JSON.stringify(metrics || {})} (Height/Wingspan are in Inches, Weight is in Pounds)
 
-Olympic History Stats:
+Team USA Legacy Stats:
 - Total Records: ${stats.totalRecords}
-- Top Sports: ${stats.topSports?.map(s => `${s.sport} (${s.count})`).join(', ')}
-- Tallest Athlete: ${stats.tallestRecord?.height_cm}cm
-- Shortest Athlete: ${stats.shortestRecord?.height_cm}cm
+- Top Disciplines: ${stats.topSports?.map(s => `${s.sport} (${s.count})`).join(', ')}
+- Tallest Athlete (Historical): ${stats.tallestRecord?.height_cm}cm
+- Shortest Athlete (Historical): ${stats.shortestRecord?.height_cm}cm
 
-Based on their physical profile (Inches/lbs) and the Olympic stats (cm/kg), determine their "Olympic Archetype".
-Note: 1 inch = 2.54cm. 1 lb = 0.45kg.
-1. Start with a bold, premium title for their identity (e.g. "The Wingspan Wonder", "The Agility Specialist"). Do NOT use "You are the" as a prefix.
-2. Write a 2nd sentence explaining WHY this fits them based on their metrics vs Olympic history.
-3. Keep it punchy, professional, and Apple-inspired. Do NOT use markdown formatting (no asterisks or bolding).
+Determine the user's "Team USA Archetype" based on their physical profile.
+STRICT COMPLIANCE RULES:
+1. TERMINOLOGY: 
+   - Use "Olympic Games [City] [Year]" or "Olympic Winter Games [City] [Year]".
+   - For 2028, use "LA28 Games".
+   - NEVER use "former" or "past" Olympian.
+2. NO INDIVIDUAL NAMES: Do NOT mention specific athlete names.
+3. OUTPUT:
+   - Start with a bold, premium title for their identity (e.g. "The Wingspan Wonder", "The Agility Specialist"). Do NOT use "You are the".
+   - Write a 2nd sentence explaining the fit based on aggregate discipline history.
+   - Keep it punchy, professional, and Apple-inspired. Do NOT use markdown formatting (no asterisks or bolding).
 
 Write exactly two sentences.`;
 

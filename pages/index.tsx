@@ -94,11 +94,17 @@ export default function LandingPage() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-8"
         >
+          <div className="inline-flex items-center gap-2 mb-4 bg-white/80 backdrop-blur-md px-4 py-1.5 rounded-full border border-gray-400 shadow-sm">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
+            <p className="text-[10px] font-black text-gray-900 uppercase tracking-[0.3em]">
+              Built by Sagar Sahu
+            </p>
+          </div>
           <h1 className="text-5xl sm:text-7xl font-black tracking-tighter text-gray-900 mb-4 leading-none">
             USA <span className="text-blue-600">Wrapped</span>
           </h1>
           <p className="text-base sm:text-lg text-gray-600 font-medium max-w-xl mx-auto leading-relaxed">
-            Enter your details to generate your personalized Olympic archetype using Gemini API and Google Cloud.
+            Enter your details to generate your personalized athletic identity using Gemini API and Google Cloud.
           </p>
         </motion.div>
 
