@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import Link from 'next/link';
 import { STATE_DATA } from '@/constants/state-data';
 import { MedalDistribution } from '@/components/ui/medal-distribution';
+import { CoachingCorner } from '@/components/ui/coaching-corner';
 
 const STATE_ABBREVIATIONS: Record<string, string> = {
   'Alabama': 'AL', 'Alaska': 'AK', 'Arizona': 'AZ', 'Arkansas': 'AR', 'California': 'CA',
@@ -272,12 +273,17 @@ export default function Wrapped() {
               </AnimatePresence>
             </div>
 
-            {/* NEW TILE: Global Success Breakdown — Fills the 275px gap */}
-            <div className="col-span-1 md:col-span-2 h-[275px] bg-white rounded-[2.5rem] shadow-sm border border-gray-200/60 overflow-hidden hover:shadow-xl hover:shadow-gray-200/60 transition-all duration-500">
+            {/* TILE 2b: Podium Distribution — Condensed */}
+            <div className="col-span-1 md:col-span-1 h-[275px] bg-white rounded-[2.5rem] shadow-sm border border-gray-200/60 overflow-hidden hover:shadow-xl hover:shadow-gray-200/60 transition-all duration-500">
               <MedalDistribution 
                 medals={stats?.medalDistribution || { Gold: 0, Silver: 0, Bronze: 0, Participated: 0 }}
                 seasons={stats?.seasonDistribution || { Summer: 0, Winter: 0 }}
               />
+            </div>
+
+            {/* TILE 2c: Coaching Corner — New slot */}
+            <div className="col-span-1 md:col-span-1 h-[275px] bg-white rounded-[2.5rem] shadow-sm border border-gray-200/60 overflow-hidden hover:shadow-xl hover:shadow-gray-200/60 transition-all duration-500">
+              <CoachingCorner />
             </div>
 
             {/* TILE 3: Interactive Radar — Aligned with Chat bottom */}
@@ -285,7 +291,7 @@ export default function Wrapped() {
               <RadarChart />
             </div>
 
-            {/* TILE 4: Total Athletes — Increased height */}
+            {/* TILE 4: Participation Trend — Restored to full width */}
             <div className="col-span-1 md:col-span-2 h-[340px] bg-white rounded-[2.5rem] p-10 shadow-sm border border-gray-200/60 flex flex-col group hover:shadow-xl hover:shadow-gray-200/60 transition-all duration-500">
               <ParticipationTrend total={stats?.totalRecords || 3636} />
             </div>

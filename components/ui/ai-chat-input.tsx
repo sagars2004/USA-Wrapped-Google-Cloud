@@ -22,6 +22,7 @@ const AIChatInput = ({ context, externalPrompt }: AIChatInputProps) => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isFirstRender = useRef(true);
 
   // Handle external triggers (e.g. "Deep Research" button)
@@ -42,6 +43,14 @@ const AIChatInput = ({ context, externalPrompt }: AIChatInputProps) => {
   useEffect(() => {
     scrollToBottom();
   }, [messages, isLoading]);
+
+  // Auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [input]);
 
   const handleSend = async (content: string = input) => {
     const textToSend = content.trim();
@@ -120,21 +129,44 @@ const AIChatInput = ({ context, externalPrompt }: AIChatInputProps) => {
 
       {/* Input Area */}
       <div className="p-6 pt-2">
-        <div className="relative group">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder="Ask anything..."
-            className="w-full bg-gray-50 border-2 border-transparent focus:border-blue-600/20 focus:bg-white rounded-2xl py-4 pl-6 pr-14 text-sm font-bold text-gray-900 transition-all placeholder:text-gray-400 outline-none"
-          />
+        <div className="relative group flex items-end gap-2">
+          <div className="relative flex-1">
+            <textarea
+              ref={textareaRef}
+              rows={1}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+              placeholder="Ask anything..."
+              className="w-full bg-gray-50 border-2 border-transparent focus:border-blue-600/20 focus:bg-white rounded-2xl py-4 pl-6 pr-14 text-sm font-bold text-gray-900 transition-all placeholder:text-gray-400 outline-none resize-none max-h-32 min-h-[58px]"
+            />
+            <button
+              onClick={() => handleSend()}
+              disabled={!input.trim() || isLoading}
+              className="absolute right-3 bottom-2.5 w-10 h-10 bg-gray-900 hover:bg-black disabled:bg-gray-200 text-white rounded-xl flex items-center justify-center transition-all shadow-lg shadow-gray-200"
+            >
+              <Send size={18} />
+            </button>
+          </div>
           <button
-            onClick={() => handleSend()}
-            disabled={!input.trim() || isLoading}
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-gray-900 hover:bg-black disabled:bg-gray-200 text-white rounded-xl flex items-center justify-center transition-all shadow-lg shadow-gray-200"
+            onClick={async () => {
+              try {
+                const res = await fetch('/api/surprise-me');
+                const data = await res.json();
+                if (data.question) setInput(data.question);
+              } catch (err) {
+                console.error("Surprise me failed:", err);
+              }
+            }}
+            title="Surprise Me"
+            className="w-14 h-14 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center transition-all border border-blue-100 hover:scale-105 active:scale-95 group shadow-sm flex-shrink-0 mb-0.5"
           >
-            <Send size={18} />
+            <Sparkles size={20} className="group-hover:rotate-12 transition-transform" />
           </button>
         </div>
       </div>

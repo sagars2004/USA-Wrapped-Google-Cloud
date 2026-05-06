@@ -44,26 +44,38 @@ STRICT COMPLIANCE RULES:
    - NEVER use "former" or "past" Olympian.
 2. NO INDIVIDUAL NAMES: Do NOT mention specific athlete names.
 3. OUTPUT:
-   - Start with a bold, premium title for their identity (e.g. "The Wingspan Wonder", "The Agility Specialist"). Do NOT use "You are the".
-   - Write a 2nd sentence explaining the fit based on aggregate discipline history.
-   - Keep it punchy, professional, and Apple-inspired. Do NOT use markdown formatting (no asterisks or bolding).
-
-Write exactly two sentences.`;
+   - Write exactly ONE sentence which is a bold, premium title for their identity (3-5 words long).
+   - E.g. "The Wingspan Wonder" or "The Agility Specialist". 
+   - Do NOT use "You are the" as a prefix.
+   - Do NOT write a second sentence.
+   - Keep it punchy, professional, and Apple-inspired. Do NOT use markdown formatting (no asterisks or bolding).`;
 
     // Generate content using the new SDK and Gemini 2.5 Pro (Gemini 1.5 is retired in 2026)
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-pro',
       contents: prompt,
       config: {
-        maxOutputTokens: 200,
+        maxOutputTokens: 100,
         temperature: 0.7,
       }
     });
 
-    // The new SDK returns response.text directly
-    const archetypeText = response.text.replace(/\*\*/g, '');
+    // Robustly extract the text from the new SDK response structure
+    // Accessing response.text directly can throw if the response is blocked by safety filters
+    const rawText = response.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    let archetypeText = rawText.replace(/\*\*/g, '').trim();
 
-    res.status(200).json({ archetype: archetypeText.trim() });
+    // Ensure we only take the first sentence/title (strip anything after first period)
+    if (archetypeText.includes('.')) {
+      archetypeText = archetypeText.split('.')[0].trim();
+    }
+
+    // BUG FIX: Ensure we don't return just "The" or an empty/short string
+    if (archetypeText.length < 10 || archetypeText.toLowerCase() === 'the') {
+      archetypeText = "The Versatile Competitor";
+    }
+
+    res.status(200).json({ archetype: archetypeText });
   } catch (error) {
     console.error('[USA Wrapped] AI generation failed with error:', error.message);
     // Bulletproof fallback so the UI never breaks
