@@ -4,14 +4,15 @@
 
 **USA Wrapped** is a personalized, AI-powered dashboard that lets users discover their Team USA athletic identity. Inspired by Spotify Wrapped, it analyzes your physical metrics and matches them against historical Team USA performance data from US-hosted Olympic and Paralympic Games — then generates a unique "Athletic Archetype" powered by Google Gemini.
 
-Built by **Sagar Sahu** for the 2025 Google Cloud Hackathon.
+Built by **Sagar Sahu** for the 2026 Team USA x Google Cloud Hackathon.
 
 ---
 
 ## 🌐 Live Demo
 
-> **[https://usa-wrapped-google-cloud-XXXXXXXX-uc.a.run.app](https://usa-wrapped-google-cloud-XXXXXXXX-uc.a.run.app)**
-> *(Replace with your actual Cloud Run URL)*
+> *You can view my project at this URL, which is live and deployed through GCP's Cloud Run platform:*
+> 
+> **[https://usa-wrapped-google-cloud-453194824534.us-central1.run.app/](https://usa-wrapped-google-cloud-453194824534.us-central1.run.app/)**
 
 ---
 
